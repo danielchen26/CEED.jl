@@ -81,12 +81,42 @@ function evaluate_experiments(
     # predictive accuracy scores over subsets of experiments
     scores = Dict{Set{String},return_full_metrics ? PerformanceEvaluation : Float64}()
     # generate all the possible subsets from the set of experiments, with a minimum size of 1 and maximum size of 'max_cardinality'
-    experimental_subsets = collect(powerset(collect(keys(experiments)), 1, max_cardinality))
+
+
+    if feature_selection == true
+        @info "The feature selection is opt to generate most a subset of most informative features set "
+        importance_data, best_model_performances_plt =
+            lasso_feature_selection(data, target_col)
+        selected_features = importance_data["features"] .|> String
+        @info "The informative features are selected as : " selected_features
+
+        # redefine the experiment with new selected feature but keep the dictionary structure
+        new_experiments = Dict{String, Array{String}}()
+        for (experiment, features) in experiments
+            new_features = filter(feature -> feature in selected_features, features)
+            if !isempty(new_features)
+                new_experiments[experiment] = new_features
+            end
+        end
+
+        @info "The new experiments are : ", new_experiments
+
+        experimental_subsets =
+            collect(powerset(collect(keys(new_experiments)), 1, max_cardinality))
+        @info "The experimental subsets are:",experimental_subsets
+        experimental_subsets = collect(powerset(collect(keys(experiments)), 1, max_cardinality))
+        @info "The old experimental subsets are:",experimental_subsets
+    else
+        experimental_subsets = collect(powerset(collect(keys(experiments)), 1, max_cardinality))
+        @info "The experimental subsets are:",experimental_subsets
+    end
+
     # lock
     lk = ReentrantLock()
 
     Threads.@threads for exp_set in collect(experimental_subsets)
         features = eltype(names(X))[zero_cost_features...]
+        y = coerce(y, Multiclass)
         foreach(
             x -> append!(
                 features,
