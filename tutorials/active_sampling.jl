@@ -1,5 +1,5 @@
 # # Remarks for active sampling:
-# The desirable_range and target_constraints in the distancebased_active.jl code serve different purposes, although they both influence the sampling process:
+# The desirable_range and target_constraints in the DistanceBased.jl code serve different purposes, although they both influence the sampling process:
 # Desirable Range Constraints
 # The desirable_range is used to apply a filter to the data based on specified ranges for certain columns. The code snippet you provided checks if the values in a column fall within a specified range and creates a boolean array (within_range) that is true for rows that meet the criteria and false for those that don't. This boolean array is then used to element-wise multiply the similarities array, effectively setting the similarity to zero for rows that don't fall within the range. This is a form of hard constraint that excludes certain data points from being sampled.
 # Target Constraints
@@ -71,7 +71,7 @@ target_constraints = Dict("HeartDisease" => x -> any(x .== 1) ? 1.5 : 1.0)
 
 
 (; sampler, uncertainty, weights) =
-    DistanceBased_active(
+    DistanceBased(
         data,
         "HeartDisease",
         Entropy,
