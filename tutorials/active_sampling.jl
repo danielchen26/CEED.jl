@@ -15,9 +15,6 @@
 
 # In summary, whether to use filtering or weighting depends on the context and the desired strictness of the constraints. If strict exclusion is not necessary and you want to retain all data points with adjusted importance, then weighting is the appropriate choice. If certain data points should not be considered at all, filtering is the way to go.
 
-
-
-
 using CSV, DataFrames
 cd(@__DIR__)
 data = CSV.File("data/heart_disease.csv") |> DataFrame
@@ -56,8 +53,6 @@ using CEED, CEED.GenerativeDesigns
 
 # Note that internally, a state of the decision process is represented as a tuple `(evidence, costs)`.
 
-
-
 # ## Active Sampling
 # Desirable Range
 # We might want to focus on data points that fall within one standard deviation from the mean for continuous variables. For example, for Age with a mean of approximately 53.5, we could define a range around this mean.
@@ -69,17 +64,15 @@ desirable_range = Dict("Age" => (mean_age - std_age, mean_age + std_age))
 # For binary variables like HeartDisease, we might want to increase the weight of samples with the disease present to balance the dataset if it's imbalanced.
 target_constraints = Dict("HeartDisease" => x -> any(x .== 1) ? 1.5 : 1.0)
 
-
-(; sampler, uncertainty, weights) =
-    DistanceBased(
-        data,
-        "HeartDisease",
-        Entropy,
-        Exponential(; λ = 5),
-        desirable_range = desirable_range,
-        importance_sampling = true,
-        target_constraints = target_constraints,
-    );
+(; sampler, uncertainty, weights) = DistanceBased(
+    data,
+    "HeartDisease",
+    Entropy,
+    Exponential(; λ = 5);
+    desirable_range = desirable_range,
+    importance_sampling = true,
+    target_constraints = target_constraints,
+);
 # The CEED package offers an additional flexibility by allowing an experiment to yield readouts over multiple features at the same time. In our scenario, we can consider the features `RestingECG`, `Oldpeak`, `ST_Slope`, and `MaxHR` to be obtained from a single experiment `ECG`.
 
 # We specify the experiments along with the associated features:
