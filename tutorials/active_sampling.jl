@@ -1,11 +1,17 @@
 # # Remarks for active sampling:
-# The desirable_range and target_constraints in the DistanceBased.jl code serve different purposes, although they both influence the sampling process:
-# Desirable Range Constraints
-# The desirable_range is used to apply a filter to the data based on specified ranges for certain columns. The code snippet you provided checks if the values in a column fall within a specified range and creates a boolean array (within_range) that is true for rows that meet the criteria and false for those that don't. This boolean array is then used to element-wise multiply the similarities array, effectively setting the similarity to zero for rows that don't fall within the range. This is a form of hard constraint that excludes certain data points from being sampled.
-# Target Constraints
-# The target_constraints, on the other hand, apply a softer form of constraint by adjusting the weights of the data points based on certain conditions. Instead of excluding data points that don't meet the criteria, target_constraints increase the weight of those that do, making them more likely to be sampled, but still allowing for the possibility of sampling those that don't meet the criteria.
-# Comparison and Necessity
-# The key difference is that desirable_range acts as a binary filter (include or exclude), while target_constraints adjusts the probability of inclusion without necessarily excluding any data points.
+# The `desirable_range`` and `importance_weights`` in the DistanceBased.jl code serve different purposes, although they both influence the sampling process.
+
+# ## Desirable Range Constraints
+
+# The `desirable_range` is used to apply a filter to the data based on specified ranges for certain columns. The code snippet you provided checks if the values in a column fall within a specified range and creates a boolean array (`within_range`) that is true for rows that meet the criteria and false for those that don't. This boolean array is then used to element-wise multiply the similarities array, effectively setting the similarity to zero for rows that don't fall within the range. This is a form of hard constraint that excludes certain data points from being sampled.
+
+# ## Target Constraints
+
+# The `importance_weights`, on the other hand, apply a softer form of constraint by adjusting the weights of the data points based on certain conditions. Instead of excluding data points that don't meet the criteria, `importance_weights` increase the weight of those that do, making them more likely to be sampled, but still allowing for the possibility of sampling those that don't meet the criteria.
+
+# ## Comparison and Necessity
+
+# The key difference is that `desirable_range` acts as a binary filter (include or exclude), while `importance_weights` adjusts the probability of inclusion without necessarily excluding any data points.
 
 # Whether to increase the weight for elements within the range or simply filter them out depends on the specific requirements of the problem you're trying to solve:
 
@@ -16,7 +22,6 @@
 # In summary, whether to use filtering or weighting depends on the context and the desired strictness of the constraints. If strict exclusion is not necessary and you want to retain all data points with adjusted importance, then weighting is the appropriate choice. If certain data points should not be considered at all, filtering is the way to go.
 
 using CSV, DataFrames
-cd(@__DIR__)
 data = CSV.File("data/heart_disease.csv") |> DataFrame
 data[1:10, :]
 
@@ -54,15 +59,15 @@ using CEED, CEED.GenerativeDesigns
 # Note that internally, a state of the decision process is represented as a tuple `(evidence, costs)`.
 
 # ## Active Sampling
-# Desirable Range
-# We might want to focus on data points that fall within one standard deviation from the mean for continuous variables. For example, for Age with a mean of approximately 53.5, we could define a range around this mean.
+# ### Desirable Range
+# We might want to focus on data points that fall within one standard deviation from the mean for continuous variables. For example, for `:Age` with a mean of approximately 53.5, we could define a range around this mean.
 mean_age = 53.5
-std_age = 9 # Hypothetical standard deviation
+std_age = 9 # hypothetical standard deviation
 desirable_range = Dict("Age" => (mean_age - std_age, mean_age + std_age))
 
-# Target Constraints
-# For binary variables like HeartDisease, we might want to increase the weight of samples with the disease present to balance the dataset if it's imbalanced.
-target_constraints = Dict("HeartDisease" => x -> any(x .== 1) ? 1.5 : 1.0)
+# ### Target Constraints
+# For binary variables like `:HeartDisease`, we might want to increase the weight of samples with the disease present to balance the dataset if it's imbalanced.
+importance_weights = Dict("HeartDisease" => x -> any(x .== 1) ? 1.5 : 1.0)
 
 (; sampler, uncertainty, weights) = DistanceBased(
     data,
@@ -70,10 +75,10 @@ target_constraints = Dict("HeartDisease" => x -> any(x .== 1) ? 1.5 : 1.0)
     Entropy,
     Exponential(; λ = 5);
     desirable_range = desirable_range,
-    importance_sampling = true,
-    target_constraints = target_constraints,
+    importance_weights = importance_weights,
 );
-# The CEED package offers an additional flexibility by allowing an experiment to yield readouts over multiple features at the same time. In our scenario, we can consider the features `RestingECG`, `Oldpeak`, `ST_Slope`, and `MaxHR` to be obtained from a single experiment `ECG`.
+
+# The CEEDesigns package offers an additional flexibility by allowing an experiment to yield readouts over multiple features at the same time. In our scenario, we can consider the features `RestingECG`, `Oldpeak`, `ST_Slope`, and `MaxHR` to be obtained from a single experiment `ECG`.
 
 # We specify the experiments along with the associated features:
 

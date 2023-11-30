@@ -21,7 +21,7 @@ DiscreteDistance(; λ = 1) = function (x, col; _...)
     return map(y -> y == x ? λ : 0.0, col)
 end
 
-# default similarity functional
+# Default similarity functional
 """
     Exponential(; λ=1)
 
@@ -29,7 +29,7 @@ Return an anonymous function `x -> exp(-λ * sum(x; init=0))`.
 """
 Exponential(; λ = 1 / 2) = x -> exp(-λ * x)
 
-# default uncertainty functionals
+# Default uncertainty functionals
 compute_variance(data::AbstractVector; weights) = var(data, Weights(weights))
 
 compute_variance(data; weights) = sum(var(Matrix(data), Weights(weights), 1))
@@ -105,11 +105,11 @@ function MahalanobisDistance(; diagonal = 0)
             @warn "Not all column types in the predictor matrix are numeric ($(eltype.(eachcol(data)))). This may cause errors."
         end
         Σ = cov(Matrix(data[!, non_targets]), Weights(prior))
-        # add diagonal entries
+        # Add diagonal entries
         diagonal = diagonal isa Number ? fill(diagonal, size(Σ, 1)) : diagonal
         foreach(i -> Σ[i, i] += diagonal[i], axes(Σ, 1))
 
-        # get the inverse of Σ
+        # Get the inverse of Σ
         Λ = inv(Σ)
 
         compute_distances = function (evidence::Evidence)
@@ -215,15 +215,15 @@ function DistanceBased(
         error("distance $distance does not accept `(data, targets, prior)`")
     end
 
-    # if an "importance weight" is a function, apply it to the column to get a numeric vector
+    # If "importance weight" is a function, apply it to the column to get a numeric vector
     importance_weights =
         Dict(val isa Function ? val(colname) : val for (colname, val) in importance_weights)
 
-    # convert distances into probabilistic weights
+    # Convert distances into probabilistic weights
     compute_weights = function (evidence::Evidence)
         similarities = prior .* map(x -> similarity(x), compute_distances(evidence))
 
-        # hard match on target columns
+        # Hard match on target columns
         for colname in collect(keys(evidence)) ∩ targets
             similarities .*= data[!, colname] .== evidence[colname]
         end
