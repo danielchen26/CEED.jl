@@ -11,8 +11,8 @@ In data-driven decision-making, the estimation of the posterior distribution of 
 ## **Deriving \( q(e_s' | e_s) \) within the active (constrained) sampling-based approach**
 ### Step 1: Define the Feature and Target Constraints
 
-- \( \mathcal{C}_{e} \): Constraint set for the feature values of \( e_s \).
-- \( \mathcal{C}_{y} \): Constraint set for the target values of \( y \).
+- \( \mathcal{C}_{e} \): Hard constraint set for the feature values of \( e_s \).
+- \( \mathcal{C}_{y} \): Soft constraint set for the target values of \( y \).
 
 ### Step 2: Prior Distribution and Historical Data
 
