@@ -5,31 +5,36 @@
 
 ## **Introduction**
 
-In data-driven decision-making, the estimation of the posterior distribution of a variable of interest, given a set of constraints and historical data, is a critical task. This document provides a structured and detailed guide on how to derive and understand this posterior distribution \( q(e_s' | e_s) \). The methodology incorporates constraints on feature values and target value ranges, using a variant of importance sampling tailored to specific domain needs. The approach leverages historical data and a similarity-based method for weighting, enabling the derivation of the posterior distribution within the constraints of specific feature values and target ranges.
+In data-driven decision-making, the estimation of the posterior distribution of a variable of interest, given a set of constraints and historical data, is a critical task. This document provides a structured and detailed guide on how to derive and understand this posterior distribution \( q(\vec{e}_s' | \vec{e}_s) \). The methodology incorporates constraints on feature values and target value ranges, using a variant of importance sampling tailored to specific domain needs. The approach leverages historical data and a similarity-based method for weighting, enabling the derivation of the posterior distribution within the constraints of specific feature values and target ranges.
 
 
-## **Deriving \( q(e_s' | e_s) \) within the active (constrained) sampling-based approach**
+
+## Deriving \( q(\vec{e}_{s'} | \vec{e}_s) \) within the active (constrained) sampling-based approach
+
 ### Step 1: Define the Feature and Target Constraints
 
-- \( \mathcal{C}_{e} \): Hard constraint set for the feature values of \( e_s \).
-- \( \mathcal{C}_{y} \): Soft constraint set for the target values of \( y \).
+- \( \mathcal{C}{e} \): Hard constraint set for the feature values of \( \vec{e}_s \).
+- \( \mathcal{C}{y} \): Soft constraint set for the target values of \( y \).
 
 ### Step 2: Prior Distribution and Historical Data
 
-- Let \( p(e_s) \) be the prior distribution over the states.
-- Let \( H \) represent the historical data consisting of pairs \( (e_h, y_h) \),  where \( e_h \) are historical states and \( y_h \) are the corresponding outcomes.
+- Let \( p(\vec{e}s) \) be the prior distribution over the states.
+- Let \( H \) represent the historical data matrix consisting of pairs \( (\vec{e}_h, y_h) \), where \( \vec{e}_h \) are historical states and \( y_h \) are the corresponding outcomes.
+
 
 ### Step 3: Define the Similarity Measure
 
-- **Similarity Function**:  Define a similarity measure \( \text{sim}(e_s, e_h) \) that quantifies the resemblance between the test state \( e_s \) and historical states \( e_h \).
+- Similarity Function: Define a similarity measure \( \text{sim}(\vec{e}_s, \vec{e}_h^s) \) that quantifies the resemblance between the test state \( \vec{e}_s \) and historical states \( \vec{e}_h^s \). 
+  - In the historical dataset \( H \), each row vector is represented by \( \vec{e}_h\), which has the complete dimension of the feature state space. When given the particially known features state \( \vec{e}_s \), the similarity measure is then calculated as follows: \( \text{sim}(\vec{e}_s, \vec{e}_h^s) \), which only uses the known dimensions of the feature state space.
+
 
 ### Step 4: Compute Constrained Weights
 
-- **Weight Calculation**: We calculate weights for each historical data point, compute a weight that incorporates both the similarity measure and the constraints:
+- Weight Calculation: We calculate weights for each historical data point, compute a weight that incorporates both the similarity measure and the constraints:
 
-\[ w_h = \text{sim}(e_s, e_h) \cdot \mathbb{1}_{\mathcal{C}_{e}}(e_h) \cdot \mathbb{1}_{\mathcal{C}_{y}}(y_h) \]
+\[ w_h = \text{sim}(\vec{e}_s, \vec{e}_h^s) \cdot \mathbb{1}{\mathcal{C}{e}}(\vec{e}_h) \cdot \mathbb{1}{\mathcal{C}{y}}(y_h) \]
 
-where \( \mathbb{1}_{\mathcal{C}} \) is an indicator function that is 1 if the argument satisfies the constraint \( \mathcal{C} \) and 0 otherwise.
+where \( \mathbb{1}{\mathcal{C}} \) is an indicator function that is 1 if the argument satisfies the constraint \( \mathcal{C} \) and 0 otherwise.
 
 ### Step 5: Normalizing Weights
 
@@ -39,26 +44,29 @@ where \( \mathbb{1}_{\mathcal{C}} \) is an indicator function that is 1 if the a
 
 ### Step 6: Define the Sampling Distribution
 
-- Define a sampling distribution \( p(e_s'|H) \) that samples states \( e_s' \) from the historical data weighted by the normalized weights \( w_h' \).
-
+- Define a sampling distribution \( p(\vec{e}_{s'}|H) \) that samples states \( \vec{e}_{s'} \) from the historical data weighted by the normalized weights \( w_{h}' \).
 
 ### Step 7: Compute the Posterior Distribution
 
-- The posterior distribution \( q(e_s' | e_s) \) over the states, given the test state \( e_s \), is estimated by the weighted samples:
+- The posterior distribution \( q(\vec{e}_{s'} | \vec{e}_s) \) over the states, given the test state \( \vec{e}_s \), is estimated by the weighted samples:
 
-\[ q(e_s' | e_s) = \sum_{h \in H} w_h' \cdot \delta(e_s' - e_h) \]
+\[ q(\vec{e}_{s'} | \vec{e}_s) = \sum_{h \in H} w_{h}' \cdot \delta(\vec{e}_{s'} - \vec{e}_h) \]
 
 where \( \delta \) is the Dirac delta function.
 
 ### Step 8: Incorporate Active Sampling
 
-- To actively sample, we repeatedly select samples from \( q(e_s' | e_s) \) and update the weights based on the newly observed data.
+- To actively sample, we repeatedly select samples from \( q(\vec{e}_s' | \vec{e}_s) \) and update the weights based on the newly observed data.
 
 ### Step 9: Update Posterior with New Observations
 
-- When a new observation \( (e_s^*, y_s^*) \) is obtained, update the posterior distribution:
+- When a new observation \( (\vec{e}_s^, y_s^) \) is obtained, update the posterior distribution:
 
-\[ q(e_s' | e_s) = \sum_{h \in H \cup \{e_s^*\}} w_h' \cdot \delta(e_s' - e_h) \]
+
+\[ q(\vec{e}_s' | \vec{e}_s)= \sum_{h \in H \cup \{\vec{e}_s^*\}} w_h' \cdot \delta(\vec{e}_s' - \vec{e}_h) \]
+
+where \( \delta \) is the Dirac delta function. The weights \( w_h' \) are updated to incorporate the new observation.
+
 
 where \( H \cup \{e_s^*\} \) represents the updated historical data including the new observation.
 
@@ -131,3 +139,28 @@ In addition to the similarity measure used in traditional importance sampling, o
 Furthermore, our active sampling approach involves an **iterative update process**. With each new observation, the posterior distribution is updated, refining our estimation of the distribution. This allows the sampling process to adapt to new data and makes it more suitable for scenarios where data is collected sequentially over time.
 
 In summary, while our active sampling approach borrows the idea from the traditional importance sampling method, it introduces several enhancements to better handle constraints on the feature and target spaces, adjust the focus of the sampling process, and adapt to new data.
+
+
+# explaination
+
+1. Sampling: We start by sampling a state \( \vec{e}{s'} \) from the sampling distribution \( p(\vec{e}{s'}|H) \), which is based on the historical data \( H \) and the normalized weights.
+
+2. Augmentation: Once the state \( \vec{e}{s'} \) is sampled, it is considered as a new observation and is appended to the historical data, resulting in an augmented historical data set \( H \cup \{\vec{e}{s'}\} \).
+
+3. Recalculation of Similarity Scores: With the new observation \( \vec{e}{s'} \), we recalculate the similarity scores and repeat Step 4 of the process. This involves calculating new weights for each data point in the augmented historical data set, incorporating both the similarity measure and the constraints:
+
+\[ w_h = \text{sim}(\vec{e}_s, \vec{e}_h) \cdot \mathbb{1}{\mathcal{C}{e}}(\vec{e}_h) \cdot \mathbb{1}{\mathcal{C}{y}}(y_h) \]
+
+where \( \mathbb{1}{\mathcal{C}} \) is an indicator function that is 1 if the argument satisfies the constraint \( \mathcal{C} \) and 0 otherwise.
+
+4. Normalization of Weights: The weights are then normalized to ensure they sum to 1:
+
+\[ w_h' = \frac{w_h}{\sum_{h \in H \cup \{\vec{e}{s'}\}} w_h} \]
+
+5. Update of Posterior Distribution: The posterior distribution \( q(\vec{e}{s'} | \vec{e}s) \) is then updated with the new weights:
+
+\[ q(\vec{e}{s'} | \vec{e}s) = \sum{h \in H \cup \{\vec{e}{s'}\}} w_h' \cdot \delta(\vec{e}{s'} - \vec{e}h) \]
+
+where \( \delta \) is the Dirac delta function.
+
+This process is then repeated, with each new observation \( \vec{e}{s'} \) being incorporated into the posterior distribution, allowing it to dynamically adapt to new information.
