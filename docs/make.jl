@@ -1,10 +1,16 @@
 using Documenter, DocumenterMarkdown, Literate
-using CEED
+using CEEDesigns
 
 # Literate for tutorials
 const literate_dir = joinpath(@__DIR__, "..", "tutorials")
-const tutorials_src =
-    ["StaticDesigns.jl", "StaticDesignsFiltration.jl", "GenerativeDesigns.jl"]
+const tutorials_src = [
+    "SimpleStatic.jl",
+    "SimpleGenerative.jl",
+    "StaticDesigns.jl",
+    "StaticDesignsFiltration.jl",
+    "GenerativeDesigns.jl",
+    "ActiveSampling.jl",
+]
 const generated_dir = joinpath(@__DIR__, "src", "tutorials/")
 
 # copy tutorials src
@@ -29,15 +35,18 @@ end
 pages = [
     "index.md",
     "Tutorials" => [
+        "tutorials/SimpleStatic.md",
+        "tutorials/SimpleGenerative.md",
         "tutorials/StaticDesigns.md",
         "tutorials/StaticDesignsFiltration.md",
         "tutorials/GenerativeDesigns.md",
+        "tutorials/ActiveSampling.md",
     ],
     "api.md",
 ]
 
 makedocs(;
-    sitename = "CEED.jl",
+    sitename = "CEEDesigns.jl",
     format = Documenter.HTML(;
         prettyurls = false,
         edit_link = "main",
@@ -46,4 +55,4 @@ makedocs(;
     pages,
 )
 
-deploydocs(; repo = "github.com/Merck/CEED.jl.git")
+deploydocs(; repo = "github.com/Merck/CEEDesigns.jl.git")

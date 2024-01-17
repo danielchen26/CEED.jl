@@ -5,15 +5,22 @@ using POMDPTools
 
 using Combinatorics
 using DataFrames, ScientificTypes
+using LinearAlgebra
 using Statistics
 using StatsBase: Weights, countmap, entropy, sample
 using Random: default_rng, AbstractRNG
 using MCTS
 
-using ..CEED: front
+using ..CEEDesigns: front
 
+<<<<<<< HEAD
 export UncertaintyReductionMDP, DistanceBased, DistanceBased_active
 export QuadraticStandardizedDistance, DiscreteMetric, Exponential
+=======
+export UncertaintyReductionMDP, DistanceBased
+export QuadraticDistance, DiscreteDistance, SquaredMahalanobisDistance
+export Exponential
+>>>>>>> origin/main
 export Variance, Entropy
 export Evidence, State
 export efficient_design, efficient_designs
